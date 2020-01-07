@@ -38,7 +38,8 @@ namespace Overlord.Modules.IncomingOrders
                 {
                     return;
                 }
-            
+
+                // Usually grabbed from a queue
                 var incomingOrder = new IncomingOrder
                 {
                     OrderId = Guid.NewGuid().ToString("N"),
@@ -59,8 +60,7 @@ namespace Overlord.Modules.IncomingOrders
 
                     _hasSentOneMessage = true;
                 }
-
-                // });
+            // });
         }
     }
 }

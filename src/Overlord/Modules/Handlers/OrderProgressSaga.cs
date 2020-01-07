@@ -7,7 +7,7 @@ using Rebus.Handlers;
 
 namespace Overlord.Modules.Handlers
 {
-    // This is usually a Saga - just to rule that out it is a simple handler
+    // This is usually an Idempotent Saga - just to rule that out it is a simple handler
     public class OrderProgressSaga : IHandleMessages<OrderReceived>, IHandleMessages<ProductVariantGenerationFailed>
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
