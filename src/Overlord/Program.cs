@@ -1,18 +1,18 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Lamar;
-using Lamar.Microsoft.DependencyInjection;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using Overlord.Modules.IncomingOrders;
+using Rebus.Config;
 using Rebus.NLog.Config;
 using Rebus.Persistence.InMem;
 using Rebus.Retry.Simple;
-using Rebus.ServiceProvider;
 using Rebus.Transport.InMem;
 
 namespace Overlord
@@ -27,12 +27,14 @@ namespace Overlord
 
             var host = CreateHostBuilder(args).Build();
 
+            var hostedServices = host.Services.GetServices<IHostedService>();
+
             await host.RunAsync();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             new HostBuilder()
-                .UseLamar()
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .UseConsoleLifetime()
                 .ConfigureHostConfiguration(config =>
                 {
@@ -50,18 +52,7 @@ namespace Overlord
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    // Configure Rebus
-                    services.AutoRegisterHandlersFromAssemblyOf<Program>();
-                    services.AddRebus(c => c
-                        .Options(o =>
-                        {
-                            o.SimpleRetryStrategy(maxDeliveryAttempts: 3, secondLevelRetriesEnabled: true);
-                        })
-                        .Logging(l => l.NLog())
-                        .Subscriptions(s => s.StoreInMemory(new InMemorySubscriberStore()))
-                        .Transport(t => t.UseInMemoryTransport(new InMemNetwork(true), "overlord-queue")));
-
-                    // Configure Hosted Services
+                    services.AddOptions();
                     services.AddHostedService<OverlordService>();
                     services.AddHostedService<IncomingOrderPoller>();
                 })
@@ -70,14 +61,19 @@ namespace Overlord
                     logging.ClearProviders();
                     logging.AddNLog();
                 })
-                .ConfigureContainer((HostBuilderContext context, ServiceRegistry services) =>
+                .ConfigureContainer((HostBuilderContext context, ContainerBuilder builder) =>
                 {
-                    // Configure Lamar
-                    services.Scan(x =>
-                    {
-                        x.AssembliesFromApplicationBaseDirectory();
-                        x.LookForRegistries();
-                    });
+                    builder.RegisterModule<OverlordModule>();
+
+                    // Configure Rebus
+                    builder.RegisterRebus((c, ctx) => c
+                        .Options(o =>
+                        {
+                            o.SimpleRetryStrategy(maxDeliveryAttempts: 3, secondLevelRetriesEnabled: true);
+                        })
+                        .Logging(l => l.NLog())
+                        .Subscriptions(s => s.StoreInMemory(new InMemorySubscriberStore()))
+                        .Transport(t => t.UseInMemoryTransport(new InMemNetwork(true), "overlord-queue")));
                 });
     }
 }
