@@ -27,6 +27,8 @@ namespace Overlord
 
             var host = CreateHostBuilder(args).Build();
 
+            var hostedServices = host.Services.GetServices<IHostedService>();
+
             await host.RunAsync();
         }
 

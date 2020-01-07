@@ -30,6 +30,8 @@ namespace Overlord.Modules.IncomingOrders
 
         public override async Task OnTimerElapsedAsync(AppTimerState appTimerState, CancellationToken cancellationToken)
         {
+            Log.Info("Hash code: " + GetHashCode());
+
             Log.Info("Polling incoming order queue. signal_time={0}", DateTime.UtcNow);
 
             // await _incomingOrderQueue.ProcessMessagesAsync(async incomingOrder =>
