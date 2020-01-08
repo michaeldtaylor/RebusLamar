@@ -8,8 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using Overlord.Domain.Messages;
 using Overlord.Modules.IncomingOrders;
 using Rebus.Config;
+using Rebus.Handlers;
 using Rebus.NLog.Config;
 using Rebus.Persistence.InMem;
 using Rebus.Retry.Simple;
@@ -28,6 +30,8 @@ namespace Overlord
             var host = CreateHostBuilder(args).Build();
 
             var hostedServices = host.Services.GetServices<IHostedService>();
+            var handlers = host.Services.GetServices<IHandleMessages<GenerateProductVariant>>();
+            var failedHandlers = host.Services.GetServices<IHandleMessages<IFailed<GenerateProductVariant>>>();
 
             await host.RunAsync();
         }
