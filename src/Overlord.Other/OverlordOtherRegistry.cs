@@ -7,11 +7,7 @@ namespace Overlord.Other
     {
         public override void Load(IServiceCollection services)
         {
-            services.Scan(x => x
-                .FromAssemblyOf<OverlordOtherRegistry>()
-                .AddClasses()
-                    .AsSelfWithInterfaces()
-                    .WithTransientLifetime());
+            services.ScanWithDefaultConventions<OverlordOtherRegistry>();
         }
     }
 }

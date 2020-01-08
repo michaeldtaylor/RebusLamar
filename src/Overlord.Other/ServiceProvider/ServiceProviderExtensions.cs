@@ -12,8 +12,9 @@ namespace Overlord.Other.ServiceProvider
         {
             services.Scan(s => s
                 .FromAssemblyOf<T>()
-                    .AddNonCoreClasses()
-                        .AsSelfWithInterfaces()
+                    .AddClasses()
+                        .AsSelf()
+                        .AsMatchingInterface()
                         .WithTransientLifetime());
         }
 

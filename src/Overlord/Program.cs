@@ -54,9 +54,6 @@ namespace Overlord
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    // Add Registries
-                    services.AddRegistries<Program>(r => r.Name.StartsWith("Overlord"));
-
                     // Configure Rebus
                     services.AutoRegisterHandlersFromAssemblyOf<Program>();
                     services.AddRebus(c => c
@@ -71,6 +68,9 @@ namespace Overlord
                     // Configure Hosted Services
                     services.AddHostedService<OverlordService>();
                     services.AddHostedService<IncomingOrderPoller>();
+
+                    // Add Registries
+                    services.AddRegistries<Program>(r => r.Name.StartsWith("Overlord"));
                 })
                 .ConfigureLogging((context, logging) =>
                 {

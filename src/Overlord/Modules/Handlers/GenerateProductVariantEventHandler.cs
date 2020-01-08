@@ -2,6 +2,7 @@
 using NLog;
 using Overlord.Domain.Events;
 using Overlord.Domain.Messages;
+using Overlord.Other;
 using Rebus.Bus;
 using Rebus.Handlers;
 using Rebus.Retry.Simple;
@@ -16,10 +17,12 @@ namespace Overlord.Modules.Handlers
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
         private readonly IBus _bus;
+        private readonly ISimpleThing _simpleThing;
 
-        public GenerateAbCoreCouProductVariantEventHandler(IBus bus)
+        public GenerateAbCoreCouProductVariantEventHandler(IBus bus, ISimpleThing simpleThing)
         {
             _bus = bus;
+            _simpleThing = simpleThing;
         }
 
         public async Task Handle(GenerateProductVariant message)
