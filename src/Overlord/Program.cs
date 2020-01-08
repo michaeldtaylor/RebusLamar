@@ -1,14 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Lamar;
-using Lamar.Microsoft.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using Overlord.Domain.Messages;
 using Overlord.Modules.IncomingOrders;
+using Overlord.Other.ServiceProvider;
+using Rebus.Handlers;
 using Rebus.NLog.Config;
 using Rebus.Persistence.InMem;
 using Rebus.Retry.Simple;
@@ -28,13 +29,14 @@ namespace Overlord
             var host = CreateHostBuilder(args).Build();
 
             var hostedServices = host.Services.GetServices<IHostedService>();
+            var handlers = host.Services.GetServices<IHandleMessages<GenerateProductVariant>>();
+            var failedHandlers = host.Services.GetServices<IHandleMessages<IFailed<GenerateProductVariant>>>();
 
             await host.RunAsync();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             new HostBuilder()
-                .UseLamar()
                 .UseConsoleLifetime()
                 .ConfigureHostConfiguration(config =>
                 {
@@ -52,6 +54,9 @@ namespace Overlord
                 })
                 .ConfigureServices((context, services) =>
                 {
+                    // Add Registries
+                    services.AddRegistries<Program>(r => r.Name.StartsWith("Overlord"));
+
                     // Configure Rebus
                     services.AutoRegisterHandlersFromAssemblyOf<Program>();
                     services.AddRebus(c => c
@@ -71,15 +76,6 @@ namespace Overlord
                 {
                     logging.ClearProviders();
                     logging.AddNLog();
-                })
-                .ConfigureContainer((HostBuilderContext context, ServiceRegistry services) =>
-                {
-                    // Configure Lamar
-                    services.Scan(x =>
-                    {
-                        x.AssembliesFromApplicationBaseDirectory();
-                        x.LookForRegistries();
-                    });
                 });
     }
 }

@@ -1,20 +1,16 @@
-﻿using Lamar;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Overlord.Infrastructure;
+using Overlord.Other.ServiceProvider;
 
 namespace Overlord
 {
-    public class OrchestrationOverlordRegistry : ServiceRegistry
+    public class OverlordRegistry : ServiceRegistry
     {
-        public OrchestrationOverlordRegistry()
+        public override void Load(IServiceCollection services)
         {
-            Scan(x =>
-            {
-                x.AssemblyContainingType<OrchestrationOverlordRegistry>();
-                x.WithDefaultConventions();
-            });
+            services.ScanWithDefaultConventions<OverlordRegistry>();
 
-            this.AddTransient<IAppNameProvider, HostEnvironmentAppNameProvider>();
+            services.AddTransient<IAppNameProvider, HostEnvironmentAppNameProvider>();
         }
     }
 }
